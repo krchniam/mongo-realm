@@ -6,6 +6,7 @@ dependency-reduced-pom.xml
 
 # InnteliJ Idea
 .idea
+*.iml
 project.iml
 
 *.class
