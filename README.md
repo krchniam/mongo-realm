@@ -29,6 +29,8 @@ Mongo-Realm connects to `localhost` on `27017` and looks for data in `users` dat
 
 Salt property is appended to the password before hashing. For users without salt, it will be generated on the first login.
 
+For MongoDB CR authentication use properties __mongo.login__ and __mongo.password__. Empty login means no authentication.
+
 __Custom configuration__:
 
 Of course defaults can be overriden. Simply add properties to realm created in 3rd step of __Setup__.
