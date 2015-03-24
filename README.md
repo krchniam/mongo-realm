@@ -37,6 +37,8 @@ Of course defaults can be overriden. Simply add properties to realm created in 3
 |---------------------------|---------------|
 | __mongo.hostname__        | localhost     |
 | __mongo.port__            | 27017         |
+| __mongo.login__           |               |
+| __mongo.password__        |               |
 | __mongo.db.name__         | users         |
 | __mongo.collection.name__ | users         |
 | __login.property__        | login         |

@@ -1,12 +1,28 @@
 package com.tadamski.glassfish.mongo.realm;
 
+import static com.tadamski.glassfish.mongo.realm.api.MongoRealmProperties.*;
+
+import java.math.BigInteger;
+import java.net.UnknownHostException;
+import java.security.SecureRandom;
+import java.util.Arrays;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.Properties;
+import java.util.Vector;
+import java.util.logging.Logger;
+
+import org.bson.types.ObjectId;
+
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.BasicDBObjectBuilder;
 import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
 import com.mongodb.MongoClient;
+import com.mongodb.MongoCredential;
 import com.mongodb.QueryBuilder;
+import com.mongodb.ServerAddress;
 import com.mongodb.WriteConcern;
 import com.mongodb.WriteResult;
 import com.sun.appserv.security.AppservRealm;
@@ -14,16 +30,7 @@ import com.sun.enterprise.security.auth.realm.BadRealmException;
 import com.sun.enterprise.security.auth.realm.InvalidOperationException;
 import com.sun.enterprise.security.auth.realm.NoSuchRealmException;
 import com.sun.enterprise.security.auth.realm.NoSuchUserException;
-import static com.tadamski.glassfish.mongo.realm.api.MongoRealmProperties.*;
 import com.tadamski.glassfish.mongo.realm.internal.api.MongoRealmInternalApi;
-import java.math.BigInteger;
-import java.net.UnknownHostException;
-import java.security.SecureRandom;
-import java.util.Enumeration;
-import java.util.Properties;
-import java.util.Vector;
-import java.util.logging.Logger;
-import org.bson.types.ObjectId;
 
 /**
  *
@@ -37,6 +44,8 @@ public class MongoRealm extends AppservRealm implements MongoRealmInternalApi {
     private DBCollection collection;
     private String hostname;
     private Integer port;
+    private String login;
+    private String password;
     private String dbName;
     private String collectionName;
     private String loginProperty;
@@ -49,6 +58,8 @@ public class MongoRealm extends AppservRealm implements MongoRealmInternalApi {
     protected void init(Properties properties) throws BadRealmException, NoSuchRealmException {
         hostname = propertyOrDefault(properties, MONGO_HOSTNAME, "localhost");
         port = Integer.valueOf(propertyOrDefault(properties, MONGO_PORT, "27017"));
+        login = propertyOrDefault(properties, MONGO_LOGIN, "");
+        password = propertyOrDefault(properties, MONGO_PASSWORD, "");
         dbName = propertyOrDefault(properties, MONGO_DB_NAME, "users");
         collectionName = propertyOrDefault(properties, MONGO_COLLECTION_NAME, "users");
         loginProperty = propertyOrDefault(properties, LOGIN_PROPERTY, "login");
@@ -58,7 +69,17 @@ public class MongoRealm extends AppservRealm implements MongoRealmInternalApi {
         //SUPPORTED: MD2, MD5, SHA-1, SHA-256, SHA-384, and SHA-512
         hashFunction = propertyOrDefault(properties, HASH_FUNCTION, "SHA-512");
         try {
-            collection = new MongoClient(hostname, port).getDB(dbName).getCollection(collectionName);
+            ServerAddress serverAddress = new ServerAddress(hostname, port);
+
+            if (login.isEmpty()) {
+                collection = new MongoClient(serverAddress).getDB(dbName).getCollection(collectionName);
+            } else {
+                List<MongoCredential> credentials = Arrays.asList(
+                    MongoCredential.createMongoCRCredential(login, dbName, password.toCharArray())
+                );
+
+                collection = new MongoClient(serverAddress, credentials).getDB(dbName).getCollection(collectionName);
+            }
             collection.setWriteConcern(WriteConcern.ACKNOWLEDGED);
             String propJaasContext = properties.getProperty(JAAS_CONTEXT);
             if (propJaasContext != null) {

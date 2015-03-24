@@ -26,6 +26,8 @@ package com.tadamski.glassfish.mongo.realm.api;
 public class MongoRealmProperties {
 
     public static final String MONGO_HOSTNAME = "mongo.hostname";
+    public static final String MONGO_LOGIN = "mongo.login";
+    public static final String MONGO_PASSWORD = "mongo.password";
     public static final String MONGO_PORT = "mongo.port";
     public static final String MONGO_DB_NAME = "mongo.db.name";
     public static final String MONGO_COLLECTION_NAME = "mongo.collection.name";
